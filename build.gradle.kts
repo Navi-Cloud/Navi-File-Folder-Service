@@ -46,29 +46,25 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    testCompile("junit", "junit", "4.12")
-    
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.jetbrains.kotlin:kotlin-reflect")
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     compileOnly("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation(kotlin("test-junit"))
-    //compile("com.h2database:h2")
+    compile("com.h2database:h2")
 
-    // Mongo DB
+    // MongoDB
     implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
-
-    // Tika
     implementation("org.apache.tika:tika-parsers:1.25")
 }
 
 tasks.test {
-    systemProperty("navi.isTesting", "test")
     useJUnit()
 }
 
