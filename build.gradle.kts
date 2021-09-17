@@ -62,6 +62,9 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
     implementation("org.apache.tika:tika-parsers:1.25")
+
+    // gRPC
+    implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
 }
 
 tasks.test {

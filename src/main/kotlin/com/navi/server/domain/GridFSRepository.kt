@@ -41,7 +41,7 @@ class GridFSRepository(
         return convertMetaDataToFileObject(gridFSFile.metadata)
     }
 
-    fun getRootToken(userEmail: String): FileObject {
+    fun getRootFolder(userEmail: String): FileObject {
         val query: Query = Query().apply {
             addCriteria(
                 Criteria().andOperator(
