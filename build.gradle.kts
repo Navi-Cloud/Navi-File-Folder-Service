@@ -18,6 +18,7 @@ plugins {
     kotlin("jvm") version "1.4.21"
     kotlin("plugin.jpa") version "1.3.61"
     kotlin("plugin.allopen") version "1.4.21"
+    kotlin("plugin.serialization") version "1.5.30"
 }
 
 noArg {
@@ -67,7 +68,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
     implementation("org.apache.tika:tika-parsers:1.25")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
