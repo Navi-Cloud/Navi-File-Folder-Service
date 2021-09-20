@@ -5,3 +5,9 @@ spring:
     multipart:
       max-file-size: 200MB
       max-request-size: 200MB
+  data:
+    mongodb:
+      uri: mongodb://root:testPassword@localhost:27017/run_staging?authSource=admin
+grpc:
+  server:
+    port: 9090
