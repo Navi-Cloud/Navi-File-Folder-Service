@@ -43,6 +43,11 @@ apply {
 
 repositories {
     mavenCentral()
+
+    // Maven Staging Repository 추가
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/groups/staging/")
+    }
 }
 
 dependencies {
@@ -65,6 +70,7 @@ dependencies {
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
+    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.1")
 }
 
 tasks.test {
