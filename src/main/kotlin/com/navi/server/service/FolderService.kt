@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.navi.server.domain.FileObject
 import com.navi.server.domain.GridFSRepository
 import io.github.navi_cloud.shared.CommonCommunication
+import io.github.navi_cloud.shared.storage.FolderGrpc
 import io.github.navi_cloud.shared.storage.StorageMessage
 import io.grpc.stub.StreamObserver
 import net.devh.boot.grpc.server.service.GrpcService
@@ -12,12 +13,12 @@ import java.io.ByteArrayInputStream
 import java.util.*
 
 @GrpcService
-class FolderService {
+class FolderService: FolderGrpc.FolderImplBase() {
 
     @Autowired
     private lateinit var gridFSRepository: GridFSRepository
 
-    fun createRootFolder(createRootFolderRequest: StorageMessage.CreateRootFolderRequest,
+    override fun createRootFolder(createRootFolderRequest: StorageMessage.CreateRootFolderRequest,
                          responseObserver: StreamObserver<CommonCommunication.Result>)
     {
         gridFSRepository.saveToGridFS(
@@ -41,7 +42,7 @@ class FolderService {
         responseObserver.onCompleted()
     }
 
-    fun findInsideFiles(findInsideFilesRequest: StorageMessage.FindInsideFilesRequest,
+    override fun findInsideFiles(findInsideFilesRequest: StorageMessage.FindInsideFilesRequest,
                         responseObserver: StreamObserver<CommonCommunication.Result>)
     {
         val filesList: List<FileObject> = gridFSRepository.getMetadataInsideFolder(

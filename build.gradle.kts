@@ -67,10 +67,11 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
     implementation("org.apache.tika:tika-parsers:1.25")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.+")
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
-    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.1")
+    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
 }
 
 tasks.test {
