@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    val springBootVersion = "2.1.7.RELEASE"
+    val springBootVersion = "2.5.4"
 
     repositories {
         mavenCentral()
@@ -70,6 +70,10 @@ dependencies {
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
+
+    // Kafka
+    // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
+    implementation("org.springframework.kafka:spring-kafka:2.7.7")
 }
 
 tasks.test {

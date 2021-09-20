@@ -41,6 +41,17 @@ class GridFSRepository(
         return convertMetaDataToFileObject(gridFSFile.metadata)
     }
 
+    fun removeAllStorageByUserEmail(userEmail: String) {
+        val removeQuery = Query().apply {
+            addCriteria(
+                Criteria().andOperator(
+                    Criteria.where("metadata.userEmail").`is`(userEmail)
+                )
+            )
+        }
+        gridFsTemplate.delete(removeQuery)
+    }
+
     fun getRootFolder(userEmail: String): FileObject {
         val query: Query = Query().apply {
             addCriteria(
