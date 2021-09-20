@@ -17,3 +17,23 @@ spring:
 grpc:
   server:
     port: 9090
+---
+spring:
+  profiles:
+    active: container
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  data:
+    mongodb:
+      uri: mongodb://root:testPassword@mongodb_runner:27017/run_staging?authSource=admin
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:9092
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+grpc:
+  server:
+    port: 5004
