@@ -1,11 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    val springBootVersion = "2.1.7.RELEASE"
+    val springBootVersion = "2.5.4"
 
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url = uri("https://s01.oss.sonatype.org/content/groups/staging/")
+        }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -52,17 +55,18 @@ repositories {
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.jetbrains.kotlin:kotlin-reflect")
-    compile("org.springframework.boot:spring-boot-starter-data-jpa")
-    testCompile("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("com.h2database:h2")
+
     compileOnly("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation(kotlin("test-junit"))
-    compile("com.h2database:h2")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // MongoDB
-    implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
+//    implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
@@ -78,6 +82,10 @@ dependencies {
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
     implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
+
+    // Kafka
+    // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
+    implementation("org.springframework.kafka:spring-kafka:2.7.7")
 }
 
 tasks.test {

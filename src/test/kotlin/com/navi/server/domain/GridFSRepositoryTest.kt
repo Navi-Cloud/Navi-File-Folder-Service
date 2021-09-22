@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.test.context.junit4.SpringRunner
 import java.io.ByteArrayInputStream
 import org.assertj.core.api.Assertions.assertThat
+import org.springframework.data.mongodb.core.query.Criteria
 import kotlin.test.assertNotNull
 
 @RunWith(SpringRunner::class)
@@ -49,6 +50,24 @@ class GridFSRepositoryTest {
         assertNotNull(resultFileObject)
         assertThat(resultFileObject.userEmail).isEqualTo(testUserEmail)
         assertThat(resultFileObject.fileName).isEqualTo(testFileName)
+    }
+
+    @Test
+    fun is_removeAllStorageByUserEmail_works_well() {
+        val fileObject = FileObject(
+            userEmail = "kangdroid@navi.com",
+            fileName = "testFileName"
+        )
+        gridFSRepository.saveToGridFS(fileObject, ByteArrayInputStream("".toByteArray()))
+        val countBefore = gridFsTemplate.find(Query.query(Criteria.where("metadata.userEmail").`is`(fileObject.userEmail))).count()
+
+        // Do
+        gridFSRepository.removeAllStorageByUserEmail(fileObject.userEmail)
+
+        // Check
+        gridFsTemplate.find(Query.query(Criteria.where("metadata.userEmail").`is`(fileObject.userEmail))).also {
+            assertThat(it.count()).isEqualTo(countBefore-1)
+        }
     }
 
 }
