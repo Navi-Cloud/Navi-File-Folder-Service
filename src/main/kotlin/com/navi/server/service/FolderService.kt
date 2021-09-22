@@ -9,6 +9,7 @@ import io.github.navi_cloud.shared.storage.FolderGrpc
 import io.github.navi_cloud.shared.storage.StorageMessage
 import io.grpc.stub.StreamObserver
 import net.devh.boot.grpc.server.service.GrpcService
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.ByteArrayInputStream
 import java.util.*
 

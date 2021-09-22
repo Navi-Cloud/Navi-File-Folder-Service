@@ -21,7 +21,6 @@ plugins {
     kotlin("jvm") version "1.4.21"
     kotlin("plugin.jpa") version "1.3.61"
     kotlin("plugin.allopen") version "1.4.21"
-    kotlin("plugin.serialization") version "1.5.30"
 }
 
 noArg {
@@ -66,7 +65,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // MongoDB
-//    implementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
