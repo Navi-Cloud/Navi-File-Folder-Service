@@ -28,7 +28,7 @@ class FolderService: FolderGrpc.FolderImplBase() {
         gridFSRepository.saveToGridFS(
             fileObject = FileObject(
                 userEmail = createRootFolderRequest.userEmail,
-                category = Category.Doc,
+                category = Category.Etc,
                 fileName = "/",
                 currFolderName = "",
                 lastModifiedTime = Date(),

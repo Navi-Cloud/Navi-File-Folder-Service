@@ -4,7 +4,7 @@ import java.util.Date
 
 class FileObject (
     val userEmail: String = "",
-    val category: Category = Category.Doc,
+    val category: Category = Category.Etc,
     val fileName: String = "", // Full file path of this file/folder
     val currFolderName: String = "", // Full file path of current folder (this file/folder belongs to)
     val lastModifiedTime: Date = Date(),
@@ -14,5 +14,5 @@ class FileObject (
 )
 
 enum class Category {
-    Image, Video, Audio, Doc
+    Image, Video, Audio, Doc, Etc
 }
