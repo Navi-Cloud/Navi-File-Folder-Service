@@ -1,14 +1,12 @@
 package com.navi.server.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.navi.server.domain.FileObject
 import com.navi.server.domain.GridFSRepository
-import com.navi.server.dto.FileObjectDto
 import io.github.navi_cloud.shared.CommonCommunication
 import io.github.navi_cloud.shared.storage.FolderGrpc
 import io.github.navi_cloud.shared.storage.StorageMessage
 import io.grpc.stub.StreamObserver
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import net.devh.boot.grpc.server.service.GrpcService
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.ByteArrayInputStream
@@ -19,6 +17,9 @@ class FolderService: FolderGrpc.FolderImplBase() {
 
     @Autowired
     private lateinit var gridFSRepository: GridFSRepository
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper // jacksonObjectMapper
 
     override fun createRootFolder(createRootFolderRequest: StorageMessage.CreateRootFolderRequest,
                          responseObserver: StreamObserver<CommonCommunication.Result>)
@@ -51,21 +52,11 @@ class FolderService: FolderGrpc.FolderImplBase() {
             userEmail = findInsideFilesRequest.userEmail,
             targetFolderName = findInsideFilesRequest.targetFolder
         )
-
-        val responseFileList: List<FileObjectDto> = convertToFileObjectDTO(filesList)
         val reply: CommonCommunication.Result = CommonCommunication.Result.newBuilder()
             .setResultType(CommonCommunication.ResultType.SUCCESS)
-            .setObject(Json.encodeToString(responseFileList))
+            .setObject(objectMapper.writeValueAsString(filesList))
             .build()
         responseObserver.onNext(reply)
         responseObserver.onCompleted()
-    }
-
-    private fun convertToFileObjectDTO(filesList: List<FileObject>): List<FileObjectDto> {
-        var responseList: MutableList<FileObjectDto> = mutableListOf()
-        filesList.forEach {
-            responseList.add(it.toFileObjectDTO())
-        }
-        return responseList
     }
 }

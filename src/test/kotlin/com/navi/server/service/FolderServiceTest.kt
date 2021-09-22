@@ -1,15 +1,14 @@
 package com.navi.server.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.navi.server.domain.FileObject
 import com.navi.server.domain.GridFSRepository
-import com.navi.server.dto.FileObjectDto
 import io.github.navi_cloud.shared.CommonCommunication
 import io.github.navi_cloud.shared.storage.FolderGrpc
 import io.github.navi_cloud.shared.storage.StorageMessage
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
@@ -25,6 +24,9 @@ class FolderServiceTest {
 
     @Autowired
     private lateinit var gridFSRepository: GridFSRepository
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper // jacksonObjectMapper
 
     lateinit var folderBlockingStub: FolderGrpc.FolderBlockingStub
 
@@ -67,7 +69,7 @@ class FolderServiceTest {
 
         // Assert
         assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.SUCCESS)
-        val fileList: List<FileObjectDto> = Json.decodeFromString(response.`object`)
+        val fileList: List<FileObject> = objectMapper.readValue(response.`object`)
 
         assertThat(fileList.size).isEqualTo(1)
         assertThat(fileList[0].userEmail).isEqualTo(testUserEmail)

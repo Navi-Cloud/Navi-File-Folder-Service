@@ -68,7 +68,12 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
     implementation("org.apache.tika:tika-parsers:1.25")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.12.0")
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
