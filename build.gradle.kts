@@ -21,6 +21,7 @@ plugins {
     kotlin("jvm") version "1.4.21"
     kotlin("plugin.jpa") version "1.3.61"
     kotlin("plugin.allopen") version "1.4.21"
+    kotlin("plugin.serialization") version "1.5.30"
 }
 
 noArg {
@@ -46,6 +47,11 @@ apply {
 
 repositories {
     mavenCentral()
+
+    // Maven Staging Repository 추가
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/groups/staging/")
+    }
 }
 
 dependencies {
@@ -53,7 +59,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
     implementation("com.h2database:h2")
 
     compileOnly("org.springframework.boot:spring-boot-configuration-processor")
@@ -68,8 +73,15 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
     implementation("org.apache.tika:tika-parsers:1.25")
 
+    // Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.12.0")
+
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
+    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
 
     // Kafka
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka

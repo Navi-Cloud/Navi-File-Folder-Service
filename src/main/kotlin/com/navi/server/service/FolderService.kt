@@ -1,6 +1,7 @@
 package com.navi.server.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.navi.server.domain.Category
 import com.navi.server.domain.FileObject
 import com.navi.server.domain.GridFSRepository
 import io.github.navi_cloud.shared.CommonCommunication
@@ -15,6 +16,9 @@ import java.util.*
 class FolderService(
     private val gridFSRepository: GridFSRepository
 ): FolderGrpc.FolderImplBase() {
+                
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper // jacksonObjectMapper
 
     override fun createRootFolder(
         request: StorageMessage.CreateRootFolderRequest,
@@ -24,10 +28,10 @@ class FolderService(
         gridFSRepository.saveToGridFS(
             fileObject = FileObject(
                 userEmail = request.userEmail,
-                category = "",
+                category = Category.Etc,
                 fileName = "/",
                 currFolderName = "",
-                lastModifiedTime = Date().toString(),
+                lastModifiedTime = Date(),
                 isFile = false,
                 isFavorites = false,
                 isTrash = false
@@ -58,7 +62,7 @@ class FolderService(
         // Create reply
         val reply: CommonCommunication.Result = CommonCommunication.Result.newBuilder()
             .setResultType(CommonCommunication.ResultType.SUCCESS)
-            .setObject(ObjectMapper().writeValueAsString(filesList))
+            .setObject(objectMapper.writeValueAsString(filesList))
             .build()
 
         // Continue communication

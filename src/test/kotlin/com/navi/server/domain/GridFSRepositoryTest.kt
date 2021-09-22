@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner
 import java.io.ByteArrayInputStream
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.data.mongodb.core.query.Criteria
+import kotlin.test.assertNotNull
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
@@ -43,9 +44,10 @@ class GridFSRepositoryTest {
             fileObject = fileObject,
             inputStream = ByteArrayInputStream("".toByteArray())
         )
-        val resultFileObject: FileObject = gridFSRepository.getMetadataSpecific(testUserEmail, testFileName)
+        val resultFileObject: FileObject? = gridFSRepository.getMetadataSpecific(testUserEmail, testFileName)
 
         // Assert
+        assertNotNull(resultFileObject)
         assertThat(resultFileObject.userEmail).isEqualTo(testUserEmail)
         assertThat(resultFileObject.fileName).isEqualTo(testFileName)
     }
