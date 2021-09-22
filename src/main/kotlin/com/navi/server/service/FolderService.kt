@@ -1,6 +1,7 @@
 package com.navi.server.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.navi.server.domain.Category
 import com.navi.server.domain.FileObject
 import com.navi.server.domain.GridFSRepository
 import io.github.navi_cloud.shared.CommonCommunication
@@ -27,10 +28,10 @@ class FolderService: FolderGrpc.FolderImplBase() {
         gridFSRepository.saveToGridFS(
             fileObject = FileObject(
                 userEmail = createRootFolderRequest.userEmail,
-                category = "",
+                category = Category.Doc,
                 fileName = "/",
                 currFolderName = "",
-                lastModifiedTime = Date().toString(),
+                lastModifiedTime = Date(),
                 isFile = false,
                 isFavorites = false,
                 isTrash = false

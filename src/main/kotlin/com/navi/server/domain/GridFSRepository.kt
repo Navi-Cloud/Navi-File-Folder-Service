@@ -1,9 +1,16 @@
 package com.navi.server.domain
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.gridfs.model.GridFSFile
+import org.bson.BsonDocument
 import org.bson.Document
+import org.bson.json.JsonMode
+import org.bson.json.JsonWriterSettings
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -19,6 +26,9 @@ class GridFSRepository(
     private val gridFsTemplate: GridFsTemplate,
     private val gridFsOperations: GridFsOperations
 ) {
+    private val objectMapper: ObjectMapper = jacksonObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
     fun saveToGridFS(fileObject: FileObject, inputStream: InputStream) {
         val dbMetaData: DBObject = convertFileObjectToMetaData(fileObject)
 
@@ -28,34 +38,34 @@ class GridFSRepository(
     }
 
     // For querying specific file using full file path
-    fun getMetadataSpecific(userEmail: String, targetFileName: String): FileObject {
+    fun getMetadataSpecific(userEmail: String, targetFileName: String): FileObject? {
         val query: Query  = Query().apply {
             addCriteria(
                 Criteria().andOperator(
-                    Criteria.where("metadata.userEmail").`is`(userEmail),
-                    Criteria.where("metadata.fileName").`is`(targetFileName)
+                    Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
+                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFileName)
                 )
             )
         }
         val gridFSFile: GridFSFile = gridFsTemplate.findOne(query)
-        return convertMetaDataToFileObject(gridFSFile.metadata)
+        return convertMetaDataToFileObject(gridFSFile.metadata ?: return null)
     }
 
-    fun getRootFolder(userEmail: String): FileObject {
-        val query: Query = Query().apply {
-            addCriteria(
-                Criteria().andOperator(
-                    Criteria.where("metadata.userEmail").`is`(userEmail),
-                    Criteria.where("metadata.fileName").`is`("/"),
-                    Criteria.where("metadata.isFile").`is`(false)
-                )
-            )
-        }
-
-        val gridFSFile: GridFSFile = gridFsTemplate.findOne(query)
-
-        return convertMetaDataToFileObject(gridFSFile.metadata)
-    }
+//    fun getRootFolder(userEmail: String): FileObject {
+//        val query: Query = Query().apply {
+//            addCriteria(
+//                Criteria().andOperator(
+//                    Criteria.where("metadata.userEmail").`is`(userEmail),
+//                    Criteria.where("metadata.fileName").`is`("/"),
+//                    Criteria.where("metadata.isFile").`is`(false)
+//                )
+//            )
+//        }
+//
+//        val gridFSFile: GridFSFile = gridFsTemplate.findOne(query)
+//
+//        return convertMetaDataToFileObject(gridFSFile.metadata)
+//    }
 
     // For querying inside-folder file
     fun getMetadataInsideFolder(userEmail: String, targetFolderName: String): List<FileObject> {
@@ -73,39 +83,32 @@ class GridFSRepository(
         }.toList()
     }
 
-    fun getFullTargetStream(userEmail: String, fileObject: FileObject): InputStream {
-        val query: Query = Query().apply {
-            addCriteria(
-                Criteria().andOperator(
-                    Criteria.where("metadata.userEmail").`is`(userEmail),
-                    Criteria.where("metadata.fileName").`is`(fileObject.fileName)
-                )
-            )
-        }
-
-        val file: GridFSFile = gridFsTemplate.findOne(query)
-        return gridFsOperations.getResource(file).inputStream
-    }
+//    fun getFullTargetStream(userEmail: String, fileObject: FileObject): InputStream {
+//        val query: Query = Query().apply {
+//            addCriteria(
+//                Criteria().andOperator(
+//                    Criteria.where("metadata.userEmail").`is`(userEmail),
+//                    Criteria.where("metadata.fileName").`is`(fileObject.fileName)
+//                )
+//            )
+//        }
+//
+//        val file: GridFSFile = gridFsTemplate.findOne(query)
+//        return gridFsOperations.getResource(file).inputStream
+//    }
 
     // Reflection Helper
-    private fun convertFileObjectToMetaData(fileObject: FileObject): DBObject {
-        val dbObject: DBObject = BasicDBObject()
-        FileObject::class.memberProperties.forEach {
-            dbObject.put(it.name, it.get(fileObject))
-        }
+    private fun convertFileObjectToMetaData(fileObject: FileObject): BasicDBObject {
+        val jsonString = objectMapper.writeValueAsString(fileObject)
 
-        return dbObject
+        return BasicDBObject.parse(jsonString)
     }
 
-    private fun convertMetaDataToFileObject(metadata: Document?): FileObject {
-        val defaultConstructor: KFunction<FileObject> = FileObject::class.constructors.first()
-        val argument = defaultConstructor
-            .parameters
-            .map {
-                it to (metadata?.get(it.name) ?: "")
-            }
-            .toMap()
-
-        return defaultConstructor.callBy(argument)
+    private fun convertMetaDataToFileObject(metadata: Document): FileObject {
+        return objectMapper.readValue(metadata.toJson(
+            JsonWriterSettings
+            .builder()
+            .outputMode(JsonMode.RELAXED)
+            .build()))
     }
 }
