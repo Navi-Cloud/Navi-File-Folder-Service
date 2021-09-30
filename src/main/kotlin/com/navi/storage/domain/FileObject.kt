@@ -1,4 +1,4 @@
-package com.navi.server.domain
+package com.navi.storage.domain
 
 import java.util.Date
 

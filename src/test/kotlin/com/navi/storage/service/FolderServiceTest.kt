@@ -1,9 +1,8 @@
-package com.navi.server.service
+package com.navi.storage.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.navi.server.domain.FileObject
-import com.navi.server.domain.GridFSRepository
+import com.navi.storage.domain.FileObject
+import com.navi.storage.domain.GridFSRepository
 import io.github.navi_cloud.shared.CommonCommunication
 import io.github.navi_cloud.shared.storage.FolderGrpc
 import io.github.navi_cloud.shared.storage.StorageMessage

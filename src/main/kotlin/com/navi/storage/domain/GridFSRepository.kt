@@ -1,13 +1,11 @@
-package com.navi.server.domain
+package com.navi.storage.domain
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.gridfs.model.GridFSFile
-import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.json.JsonMode
 import org.bson.json.JsonWriterSettings
@@ -18,8 +16,6 @@ import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.stereotype.Repository
 import java.io.InputStream
-import kotlin.reflect.KFunction
-import kotlin.reflect.full.memberProperties
 
 @Repository
 class GridFSRepository(

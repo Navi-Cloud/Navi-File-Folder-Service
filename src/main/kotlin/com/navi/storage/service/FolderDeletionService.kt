@@ -1,7 +1,7 @@
-package com.navi.server.service
+package com.navi.storage.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.navi.server.domain.GridFSRepository
+import com.navi.storage.domain.GridFSRepository
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 

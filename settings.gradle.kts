@@ -1,2 +1,2 @@
-rootProject.name = "Navi-File-Folder-Service"
+rootProject.name = "Navi-Storage"
 

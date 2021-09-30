@@ -1,11 +1,11 @@
-package com.navi.server
+package com.navi.storage
 
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
-class MainServer
+class NaviStorageServiceApplication
 
 fun main(args: Array<String>) {
-    SpringApplication.run(MainServer::class.java, *args)
+    SpringApplication.run(NaviStorageServiceApplication::class.java, *args)
 }
