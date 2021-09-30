@@ -3,6 +3,7 @@ package com.navi.storage.domain
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.gridfs.model.GridFSFile
@@ -34,12 +35,13 @@ class GridFSRepository(
     }
 
     // For querying specific file using full file path
-    fun getMetadataSpecific(userEmail: String, targetFileName: String): FileObject? {
+    fun getMetadataSpecific(userEmail: String, targetFileName: String, isFile: Boolean): FileObject? {
         val query: Query  = Query().apply {
             addCriteria(
                 Criteria().andOperator(
                     Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
-                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFileName)
+                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFileName),
+                    Criteria.where("metadata.${FileObject::isFile.name}").`is`(isFile)
                 )
             )
         }
