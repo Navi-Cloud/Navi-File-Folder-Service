@@ -130,4 +130,44 @@ class FolderServiceTest {
         assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.SUCCESS)
         assertThat(response2.resultType).isEqualTo(CommonCommunication.ResultType.DUPLICATE)
     }
+
+    @Test
+    fun if_deleteFolder_works_well() {
+        // Make test files
+        val targetFolder: String = "/target" // pull path
+        gridFSRepository.saveToGridFS(FileObject(userEmail = testUserEmail, currFolderName = "/", fileName = targetFolder, isFile = false), ByteArrayInputStream("".toByteArray()))
+        gridFSRepository.saveToGridFS(FileObject(userEmail = testUserEmail, currFolderName = targetFolder, fileName = "${targetFolder}/a"), ByteArrayInputStream("".toByteArray()))
+        gridFSRepository.saveToGridFS(FileObject(userEmail = testUserEmail, currFolderName = targetFolder, fileName = "${targetFolder}/b", isFile = false), ByteArrayInputStream("".toByteArray()))
+        gridFSRepository.saveToGridFS(FileObject(userEmail = testUserEmail, currFolderName = "${targetFolder}/b", fileName = "${targetFolder}/b/bb"), ByteArrayInputStream("".toByteArray()))
+
+        // Perform
+        val request: StorageMessage.DeleteFolderRequest = StorageMessage.DeleteFolderRequest.newBuilder()
+            .setUserEmail(testUserEmail)
+            .setTargetFolder(targetFolder)
+            .build()
+        val response : CommonCommunication.Result = folderBlockingStub.deleteFolder(request)
+
+        // Assert
+        assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.SUCCESS)
+        runCatching {
+            gridFSRepository.getMetadataSpecific(testUserEmail, targetFolder, false)
+        }.onSuccess {
+            fail("This should be failed...")
+        }
+        val fileList: List<FileObject> = gridFSRepository.getMetadataInsideFolder(testUserEmail, targetFolder)
+        assertThat(fileList.size).isEqualTo(0)
+    }
+
+    @Test
+    fun is_deleteFolder_works_well_with_notfound() {
+        // Perform
+        val request: StorageMessage.DeleteFolderRequest = StorageMessage.DeleteFolderRequest.newBuilder()
+            .setUserEmail(testUserEmail)
+            .setTargetFolder("not exist")
+            .build()
+        val response : CommonCommunication.Result = folderBlockingStub.deleteFolder(request)
+
+        // Assert
+        assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.NOTFOUND)
+    }
 }

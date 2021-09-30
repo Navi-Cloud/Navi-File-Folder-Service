@@ -60,6 +60,38 @@ class GridFSRepository(
         gridFsTemplate.delete(removeQuery)
     }
 
+    fun removeFilesInsideFolder(userEmail: String, targetFolderName: String): List<FileObject> {
+        val query = Query().apply {
+            addCriteria(
+                Criteria().andOperator(
+                    Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
+                    Criteria.where("metadata.${FileObject::currFolderName.name}").`is`(targetFolderName),
+                )
+            )
+        }
+        val fileList: List<FileObject> = gridFsTemplate.find(query).map {
+            convertMetaDataToFileObject(it.metadata)
+        }.toList()
+
+        gridFsTemplate.delete(query)
+
+        // return removed FileObject list
+        return fileList
+    }
+
+    fun removeOne(userEmail: String, targetFName: String, isFile: Boolean) {
+        val removeOneQuery = Query().apply {
+            addCriteria(
+                Criteria().andOperator(
+                    Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
+                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFName),
+                    Criteria.where("metadata.${FileObject::isFile.name}").`is`(isFile)
+                )
+            )
+        }
+        gridFsTemplate.delete(removeOneQuery)
+    }
+
 //    fun getRootFolder(userEmail: String): FileObject {
 //        val query: Query = Query().apply {
 //            addCriteria(
