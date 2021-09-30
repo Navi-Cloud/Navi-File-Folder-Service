@@ -126,7 +126,7 @@ dependencies {
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
-    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
+    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.7")
 
     // Kafka
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka

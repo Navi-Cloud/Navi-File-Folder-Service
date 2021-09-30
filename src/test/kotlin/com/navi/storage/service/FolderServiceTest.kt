@@ -1,6 +1,7 @@
 package com.navi.storage.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.navi.storage.domain.FileObject
 import com.navi.storage.domain.GridFSRepository
 import io.github.navi_cloud.shared.CommonCommunication
@@ -13,13 +14,20 @@ import org.junit.runner.RunWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
+import org.junit.After
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import java.io.ByteArrayInputStream
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
 class FolderServiceTest {
+
+    @Autowired
+    private lateinit var gridFsTemplate: GridFsTemplate
 
     @Autowired
     private lateinit var gridFSRepository: GridFSRepository
@@ -37,6 +45,12 @@ class FolderServiceTest {
             .usePlaintext()
             .build()
         folderBlockingStub = FolderGrpc.newBlockingStub(channel)
+        gridFsTemplate.delete(Query())
+    }
+
+    @After
+    fun clearAll() {
+        gridFsTemplate.delete(Query())
     }
 
     @Test
@@ -73,5 +87,47 @@ class FolderServiceTest {
         assertThat(fileList.size).isEqualTo(1)
         assertThat(fileList[0].userEmail).isEqualTo(testUserEmail)
         assertThat(fileList[0].currFolderName).isEqualTo(targetFolder)
+    }
+
+    @Test
+    fun is_createNewFolder_works_well() {
+        val parentFolderName: String = "/"
+        val newFolderName: String = "testing"
+
+        // Perform
+        val request: StorageMessage.CreateNewFolderRequest = StorageMessage.CreateNewFolderRequest.newBuilder()
+            .setUserEmail(testUserEmail)
+            .setParentFolderName(parentFolderName)
+            .setNewFolderName(newFolderName)
+            .build()
+        val response: CommonCommunication.Result = folderBlockingStub.createNewFolder(request)
+
+        // Assert
+        assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.SUCCESS)
+
+        runCatching {
+            gridFSRepository.getMetadataSpecific(testUserEmail, "/$newFolderName", false)
+        }.getOrElse {
+            fail("This should be succeed...")
+        }
+    }
+
+    @Test
+    fun is_createNewFolder_works_well_with_duplicate_error() {
+        val parentFolderName: String = "/"
+        val newFolderName: String = "testing"
+
+        // Perform
+        val request: StorageMessage.CreateNewFolderRequest = StorageMessage.CreateNewFolderRequest.newBuilder()
+            .setUserEmail(testUserEmail)
+            .setParentFolderName(parentFolderName)
+            .setNewFolderName(newFolderName)
+            .build()
+        val response: CommonCommunication.Result = folderBlockingStub.createNewFolder(request)
+        val response2: CommonCommunication.Result = folderBlockingStub.createNewFolder(request) // duplicate request
+
+        // Assert
+        assertThat(response.resultType).isEqualTo(CommonCommunication.ResultType.SUCCESS)
+        assertThat(response2.resultType).isEqualTo(CommonCommunication.ResultType.DUPLICATE)
     }
 }

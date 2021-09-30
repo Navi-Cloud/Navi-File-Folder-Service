@@ -21,6 +21,9 @@ class FolderService(
     @Autowired
     private lateinit var objectMapper: ObjectMapper // jacksonObjectMapper
 
+    @Autowired
+    private lateinit var commonService: CommonService
+
     override fun createRootFolder(
         request: StorageMessage.CreateRootFolderRequest,
         responseObserver: StreamObserver<CommonCommunication.Result>
@@ -65,6 +68,51 @@ class FolderService(
             .setResultType(CommonCommunication.ResultType.SUCCESS)
             .setObject(objectMapper.writeValueAsString(filesList))
             .build()
+
+        // Continue communication
+        responseObserver.onNext(reply)
+        responseObserver.onCompleted()
+    }
+
+    override fun createNewFolder(
+        request: StorageMessage.CreateNewFolderRequest?,
+        responseObserver: StreamObserver<CommonCommunication.Result>
+    ) {
+        var reply: CommonCommunication.Result? = null
+
+        request?.apply {
+            val pullPathOfNewFolder: String = commonService.getPullPath(parentFolderName, newFolderName)
+
+            // Check whether folder exists on DB
+            val isExisting = commonService.isExisting(userEmail, pullPathOfNewFolder, false)
+
+            if(!isExisting) {
+                // Create new folder (upload to DB)
+                val fileObject: FileObject = FileObject(
+                    userEmail = userEmail,
+                    category = Category.Etc,
+                    fileName = pullPathOfNewFolder,
+                    currFolderName = parentFolderName,
+                    lastModifiedTime = Date(),
+                    isFile = false,
+                    isFavorites = false,
+                    isTrash = false
+                )
+                gridFSRepository.saveToGridFS(fileObject, ByteArrayInputStream("".toByteArray()))
+
+                // [Success] Create reply
+                reply = CommonCommunication.Result.newBuilder()
+                    .setResultType(CommonCommunication.ResultType.SUCCESS)
+                    .build()
+            } else {
+                // [Duplicate Error] Create reply
+                reply = CommonCommunication.Result.newBuilder()
+                    .setResultType(CommonCommunication.ResultType.DUPLICATE)
+                    .setMessage("Folder name $newFolderName already exists!")
+                    .build()
+                return@apply
+            }
+        }
 
         // Continue communication
         responseObserver.onNext(reply)
