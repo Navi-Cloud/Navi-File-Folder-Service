@@ -21,6 +21,52 @@ plugins {
     kotlin("jvm") version "1.4.21"
     kotlin("plugin.jpa") version "1.3.61"
     kotlin("plugin.allopen") version "1.4.21"
+    id("jacoco")
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        html.isEnabled = true
+        xml.isEnabled = false
+        csv.isEnabled = true
+    }
+    finalizedBy("jacocoTestCoverageVerification")
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = true
+            element = "CLASS"
+
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = "0.90".toBigDecimal()
+            }
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.95".toBigDecimal()
+            }
+
+            limit {
+                counter = "LINE"
+                value = "TOTALCOUNT"
+                maximum = "200".toBigDecimal()
+            }
+            excludes = listOf(
+                "com.navi.storage.NaviStorageServiceApplicationKt",
+                "com.navi.storage.domain.**",
+                "com.navi.storage.domain.GridFSRepository"
+            )
+        }
+    }
 }
 
 noArg {
@@ -80,7 +126,7 @@ dependencies {
 
     // gRPC
     implementation("net.devh:grpc-spring-boot-starter:2.12.0.RELEASE")
-    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.5")
+    implementation("io.github.navi-cloud", "NaviSharedService", "1.0.7")
 
     // Kafka
     // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
@@ -93,4 +139,8 @@ tasks.test {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.test {
+    finalizedBy("jacocoTestReport")
 }

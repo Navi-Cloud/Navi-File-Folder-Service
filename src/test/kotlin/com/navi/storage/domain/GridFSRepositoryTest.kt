@@ -36,7 +36,8 @@ class GridFSRepositoryTest {
         val testFileName: String = "testFile"
         val fileObject: FileObject = FileObject(
             userEmail = testUserEmail,
-            fileName = testFileName
+            fileName = testFileName,
+            isFile = true
         )
 
         // Perform
@@ -44,7 +45,7 @@ class GridFSRepositoryTest {
             fileObject = fileObject,
             inputStream = ByteArrayInputStream("".toByteArray())
         )
-        val resultFileObject: FileObject? = gridFSRepository.getMetadataSpecific(testUserEmail, testFileName)
+        val resultFileObject: FileObject? = gridFSRepository.getMetadataSpecific(testUserEmail, testFileName, true)
 
         // Assert
         assertNotNull(resultFileObject)

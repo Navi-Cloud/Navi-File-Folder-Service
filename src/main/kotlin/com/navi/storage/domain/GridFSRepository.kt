@@ -3,6 +3,7 @@ package com.navi.storage.domain
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.mongodb.client.gridfs.model.GridFSFile
@@ -34,12 +35,13 @@ class GridFSRepository(
     }
 
     // For querying specific file using full file path
-    fun getMetadataSpecific(userEmail: String, targetFileName: String): FileObject? {
+    fun getMetadataSpecific(userEmail: String, targetFileName: String, isFile: Boolean): FileObject? {
         val query: Query  = Query().apply {
             addCriteria(
                 Criteria().andOperator(
                     Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
-                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFileName)
+                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFileName),
+                    Criteria.where("metadata.${FileObject::isFile.name}").`is`(isFile)
                 )
             )
         }
@@ -56,6 +58,38 @@ class GridFSRepository(
             )
         }
         gridFsTemplate.delete(removeQuery)
+    }
+
+    fun removeFilesInsideFolder(userEmail: String, targetFolderName: String): List<FileObject> {
+        val query = Query().apply {
+            addCriteria(
+                Criteria().andOperator(
+                    Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
+                    Criteria.where("metadata.${FileObject::currFolderName.name}").`is`(targetFolderName),
+                )
+            )
+        }
+        val fileList: List<FileObject> = gridFsTemplate.find(query).map {
+            convertMetaDataToFileObject(it.metadata)
+        }.toList()
+
+        gridFsTemplate.delete(query)
+
+        // return removed FileObject list
+        return fileList
+    }
+
+    fun removeOne(userEmail: String, targetFName: String, isFile: Boolean) {
+        val removeOneQuery = Query().apply {
+            addCriteria(
+                Criteria().andOperator(
+                    Criteria.where("metadata.${FileObject::userEmail.name}").`is`(userEmail),
+                    Criteria.where("metadata.${FileObject::fileName.name}").`is`(targetFName),
+                    Criteria.where("metadata.${FileObject::isFile.name}").`is`(isFile)
+                )
+            )
+        }
+        gridFsTemplate.delete(removeOneQuery)
     }
 
 //    fun getRootFolder(userEmail: String): FileObject {
