@@ -15,14 +15,12 @@ import java.util.*
 
 @GrpcService
 class FolderService(
-    private val gridFSRepository: GridFSRepository
+    private val gridFSRepository: GridFSRepository,
+    private val commonService: CommonService
 ): FolderGrpc.FolderImplBase() {
                 
     @Autowired
     private lateinit var objectMapper: ObjectMapper // jacksonObjectMapper
-
-    @Autowired
-    private lateinit var commonService: CommonService
 
     override fun createRootFolder(
         request: StorageMessage.CreateRootFolderRequest,
@@ -78,39 +76,35 @@ class FolderService(
         request: StorageMessage.CreateNewFolderRequest,
         responseObserver: StreamObserver<CommonCommunication.Result>
     ) {
-        var reply: CommonCommunication.Result
+        val pullPathOfNewFolder: String = commonService.getPullPath(request.parentFolderName, request.newFolderName)
 
-        request.apply {
-            val pullPathOfNewFolder: String = commonService.getPullPath(parentFolderName, newFolderName)
+        // Check whether folder exists on DB
+        val isExisting = commonService.isExisting(request.userEmail, pullPathOfNewFolder, false)
 
-            // Check whether folder exists on DB
-            val isExisting = commonService.isExisting(userEmail, pullPathOfNewFolder, false)
+        val reply: CommonCommunication.Result = if(!isExisting) {
+            // Create new folder (upload to DB)
+            val fileObject: FileObject = FileObject(
+                userEmail = request.userEmail,
+                category = Category.Etc,
+                fileName = pullPathOfNewFolder,
+                currFolderName = request.parentFolderName,
+                lastModifiedTime = Date(),
+                isFile = false,
+                isFavorites = false,
+                isTrash = false
+            )
+            gridFSRepository.saveToGridFS(fileObject, ByteArrayInputStream("".toByteArray()))
 
-            reply = if(!isExisting) {
-                // Create new folder (upload to DB)
-                val fileObject: FileObject = FileObject(
-                    userEmail = userEmail,
-                    category = Category.Etc,
-                    fileName = pullPathOfNewFolder,
-                    currFolderName = parentFolderName,
-                    lastModifiedTime = Date(),
-                    isFile = false,
-                    isFavorites = false,
-                    isTrash = false
-                )
-                gridFSRepository.saveToGridFS(fileObject, ByteArrayInputStream("".toByteArray()))
-
-                // [Success] Create reply
-                CommonCommunication.Result.newBuilder()
-                    .setResultType(CommonCommunication.ResultType.SUCCESS)
-                    .build()
-            } else {
-                // [Duplicate Error] Create reply
-                CommonCommunication.Result.newBuilder()
-                    .setResultType(CommonCommunication.ResultType.DUPLICATE)
-                    .setMessage("Folder name $newFolderName already exists!")
-                    .build()
-            }
+            // [Success] Create reply
+            CommonCommunication.Result.newBuilder()
+                .setResultType(CommonCommunication.ResultType.SUCCESS)
+                .build()
+        } else {
+            // [Duplicate Error] Create reply
+            CommonCommunication.Result.newBuilder()
+                .setResultType(CommonCommunication.ResultType.DUPLICATE)
+                .setMessage("Folder name ${request.newFolderName} already exists!")
+                .build()
         }
 
         // Continue communication
@@ -122,28 +116,24 @@ class FolderService(
         request: StorageMessage.DeleteFolderRequest,
         responseObserver: StreamObserver<CommonCommunication.Result>
     ) {
-        var reply: CommonCommunication.Result
+        // Check whether folder exists on DB
+        val isExisting = commonService.isExisting(request.userEmail, request.targetFolder, false)
 
-        request.apply {
-            // Check whether folder exists on DB
-            val isExisting = commonService.isExisting(userEmail, targetFolder, false)
+        val reply: CommonCommunication.Result = if (isExisting) {
+            // Delete folder
+            gridFSRepository.removeOne(request.userEmail, request.targetFolder, false) // remove target folder first
+            deleteFolderRecursively(request.userEmail, request.targetFolder) // then remove recursively
 
-            reply = if (isExisting) {
-                // Delete folder
-                gridFSRepository.removeOne(userEmail, targetFolder, false) // remove target folder first
-                deleteFolderRecursively(userEmail, targetFolder) // then remove recursively
-
-                // [Success] Create reply
-                CommonCommunication.Result.newBuilder()
-                    .setResultType(CommonCommunication.ResultType.SUCCESS)
-                    .build()
-            } else {
-                // [Not Found Error] Create reply
-                CommonCommunication.Result.newBuilder()
-                    .setResultType(CommonCommunication.ResultType.NOTFOUND)
-                    .setMessage("Folder name ${request.targetFolder} not exists!")
-                    .build()
-            }
+            // [Success] Create reply
+            CommonCommunication.Result.newBuilder()
+                .setResultType(CommonCommunication.ResultType.SUCCESS)
+                .build()
+        } else {
+            // [Not Found Error] Create reply
+            CommonCommunication.Result.newBuilder()
+                .setResultType(CommonCommunication.ResultType.NOTFOUND)
+                .setMessage("Folder name ${request.targetFolder} not exists!")
+                .build()
         }
 
         // Continue communication
@@ -154,7 +144,7 @@ class FolderService(
     private fun deleteFolderRecursively(userEmail: String, targetFolder: String) {
         val insideFiles: List<FileObject> = gridFSRepository.removeFilesInsideFolder(userEmail, targetFolder)
         insideFiles.forEach {
-            if(!it.isFile) {
+            if(!it.isFile) { // Folder
                 deleteFolderRecursively(userEmail, it.fileName)
             }
         }
