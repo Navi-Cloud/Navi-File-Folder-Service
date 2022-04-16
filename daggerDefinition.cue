@@ -64,8 +64,9 @@ dagger.#Plan & {
                 dotnet test --no-restore Navi-Storage-Test/Navi-Storage-Test.csproj \
                 	-p:CoverletOutputFormat=cobertura -p:CollectCoverage=true \
                 	-p:ThresholdType=\"line,branch,method\" \
-                	-p:Threshold=\"90,70,90\"
-                docker-compose -f Navi-Storage-Test/docker-compose.yml down -d
+                	-p:Threshold=\"90,70,90\" \
+                	-p:ExcludeByFile="**/Program.cs"
+                docker-compose -f Navi-Storage-Test/docker-compose.yml down
             """#
         }
     }
