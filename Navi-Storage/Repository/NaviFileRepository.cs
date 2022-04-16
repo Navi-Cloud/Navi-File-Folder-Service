@@ -7,6 +7,7 @@ namespace Navi_Storage.Repository;
 public interface INaviFileRepository
 {
     Task<GridFSFileInfo<string>?> GetUserFileMetadataByIdOrDefaultAsync(string fileId, string userId);
+    Task<List<GridFSFileInfo<string>>> ListFileInformationByIdAsync(string parentId, string userId);
 }
 
 public class NaviFileRepository : INaviFileRepository
@@ -31,5 +32,16 @@ public class NaviFileRepository : INaviFileRepository
         using var cursor = await _gridFsBucket.FindAsync(filter);
 
         return await cursor.FirstOrDefaultAsync();
+    }
+
+    public async Task<List<GridFSFileInfo<string>>> ListFileInformationByIdAsync(string parentId, string userId)
+    {
+        var filter = Builders<GridFSFileInfo<string>>.Filter.And(
+            Builders<GridFSFileInfo<string>>.Filter.Eq("metadata.userId", userId),
+            Builders<GridFSFileInfo<string>>.Filter.Eq("metadata.parentId", parentId));
+
+        using var cursor = await _gridFsBucket.FindAsync(filter);
+
+        return await cursor.ToListAsync();
     }
 }

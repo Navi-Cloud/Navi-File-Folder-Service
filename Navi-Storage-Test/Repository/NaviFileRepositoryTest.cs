@@ -73,4 +73,37 @@ public class NaviFileRepositoryTest
         Assert.Equal(metadata.ParentId, fileMetadata.ParentId);
         Assert.Equal(metadata.UserId, fileMetadata.UserId);
     }
+
+    [Fact(DisplayName =
+        "ListFileInformationByIdAsync: ListFileInformationByIdAsync should return list of file information if exists.")]
+    public async Task Is_ListFileInformationByIdAsync_Returns_List_Of_File()
+    {
+        // Let
+        var metadata = new NaviFileMetadata
+        {
+            MetadataType = MetadataType.File,
+            ParentId = "testParentId",
+            UserId = "testUserId"
+        };
+        var fileByte = Encoding.UTF8.GetBytes("testFile");
+        var fileId = Ulid.NewUlid().ToString();
+        await _gridFsBucket.UploadFromBytesAsync(fileId, "fileName", fileByte, new GridFSUploadOptions
+        {
+            Metadata = metadata.ToBsonDocument()
+        });
+
+        // Do
+        var list = await _naviFileRepository.ListFileInformationByIdAsync(metadata.ParentId, metadata.UserId);
+
+        // Check
+        Assert.Single(list);
+        Assert.NotNull(list[0]);
+        Assert.Equal(fileId, list[0].Id);
+        Assert.Equal("fileName", list[0].Filename);
+        var fileMetadata = BsonSerializer.Deserialize<NaviFileMetadata>(list[0].Metadata);
+        Assert.NotNull(fileMetadata);
+        Assert.Equal(metadata.MetadataType, fileMetadata.MetadataType);
+        Assert.Equal(metadata.ParentId, fileMetadata.ParentId);
+        Assert.Equal(metadata.UserId, fileMetadata.UserId);
+    }
 }

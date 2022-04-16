@@ -16,7 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<NaviFileService>();
 
 // Add Singleton Service
-builder.Services.AddSingleton(new MongoClient(builder.Configuration.GetConnectionString("MongoConnection")));
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(builder.Configuration.GetConnectionString("MongoConnection")));
 builder.Services.AddSingleton<INaviFileRepository, NaviFileRepository>();
 
 // Add HttpClient

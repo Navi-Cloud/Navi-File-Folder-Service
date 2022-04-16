@@ -80,4 +80,20 @@ public class NaviFileControllerTest
         Assert.False(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact(DisplayName = "GET /api/file/{fileId}/explore returns list of data if exists")]
+    public async Task Is_ExploreFolder_Returns_List_Of_Data_If_Exists()
+    {
+        // Let
+        _mockMessageHandler.SetupAnyRequest()
+            .ReturnsResponse(HttpStatusCode.OK, JsonContent.Create(new UserProjection {UserId = "testUserId"}));
+
+        // Do
+        _testHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
+        var response = await _testHttpClient.GetAsync($"api/file/test/explore");
+
+        // Check
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

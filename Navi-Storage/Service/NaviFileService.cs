@@ -30,4 +30,24 @@ public class NaviFileService
             UserId = naviFileMetadata.UserId
         };
     }
+
+    public async Task<List<FileMetadataResponse>> ExploreFolder(string parentId, string userId)
+    {
+        var list = await _naviFileRepository.ListFileInformationByIdAsync(parentId, userId);
+
+        return list.Select(a =>
+        {
+            // Get Response
+            var naviMetadata = BsonSerializer.Deserialize<NaviFileMetadata>(a.Metadata);
+
+            return new FileMetadataResponse
+            {
+                FileId = a.Id,
+                FileName = a.Filename,
+                ParentFileId = naviMetadata.ParentId,
+                UserId = naviMetadata.UserId,
+                MetadataType = naviMetadata.MetadataType
+            };
+        }).ToList();
+    }
 }

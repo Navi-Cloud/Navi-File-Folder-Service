@@ -36,4 +36,12 @@ public class NaviFileController : ControllerBase
 
         return Ok(fileMetadata);
     }
+
+    [NaviAuthorization]
+    [HttpGet("{fileId}/explore")]
+    public async Task<IActionResult> ExploreFolder(string fileId)
+    {
+        var userId = HttpContext.GetUserId();
+        return Ok(await _naviFileService.ExploreFolder(fileId, userId));
+    }
 }

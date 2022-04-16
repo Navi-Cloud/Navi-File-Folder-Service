@@ -98,4 +98,42 @@ public class NaviFileServiceTest
         // Check
         Assert.Null(response);
     }
+
+    [Fact(DisplayName = "ExploreFolder: ExploreFolder should return list of file entries of parent folder.")]
+    public async Task Is_ExploreFolder_Returns_ListOf_Parents()
+    {
+        // Let
+        var fileId = "testFileId";
+        var testUserId = "testUserId";
+        var naviFileMetadata = new NaviFileMetadata
+        {
+            MetadataType = MetadataType.File,
+            ParentId = "testParentId",
+            UserId = testUserId
+        };
+
+        var gridFsDictionary = new BsonDocument(new Dictionary<string, object>
+        {
+            ["_id"] = fileId,
+            ["metadata"] = naviFileMetadata.ToBsonDocument(),
+            ["filename"] = "testFileName"
+        });
+        var repositoryResponse = new GridFSFileInfo<string>(gridFsDictionary, new GridFSFileInfoSerializer<string>());
+        _mockRepository.Setup(a => a.ListFileInformationByIdAsync(naviFileMetadata.ParentId, naviFileMetadata.UserId))
+            .ReturnsAsync(new List<GridFSFileInfo<string>>
+            {
+                repositoryResponse
+            });
+
+        // Do
+        var response = await TestService.ExploreFolder(naviFileMetadata.ParentId, testUserId);
+
+        // Check
+        Assert.Single(response);
+        Assert.Equal(gridFsDictionary["_id"], response[0].FileId);
+        Assert.Equal(gridFsDictionary["filename"], response[0].FileName);
+        Assert.Equal(naviFileMetadata.ParentId, response[0].ParentFileId);
+        Assert.Equal(naviFileMetadata.MetadataType, response[0].MetadataType);
+        Assert.Equal(naviFileMetadata.UserId, response[0].UserId);
+    }
 }
